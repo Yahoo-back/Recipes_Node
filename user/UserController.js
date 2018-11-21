@@ -36,21 +36,21 @@ router.post('/register', function(req, res) {
   });
 });
 
-// 用户登录,查询数据库，判断用户名和密码是否匹配(fail)
+// 用户登录,查询数据库，判断用户名和密码是否匹配
 router.post('/login', function(req, res) {
   const name = req.body.name;
   const password = req.body.password;
-  Users.findOne({ name: name }, function(err, users) {
+  Users.findOne({ name: name, password: password }, function(err, users) {
     if (err) {
       res.send({ isSuccess: false, message: '登录出错' });
     }
     //用户不存在
-    if (!users) {
-      res.send({ isSuccess: false, message: '用户不存在' });
+    if (users) {
+      res.send({ isSuccess: true, message: '登陆成功' });
     }
     //判断密码是否一致
     else {
-      res.send({ isSuccess: true, message: '登陆成功' });
+      res.send({ isSuccess: false, message: '用户名或密码错误' });
     }
   });
 });

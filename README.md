@@ -12,7 +12,7 @@
 
 ### 1.注册（字段：name: 用户名， password:密码）solved
 
-### 2.登录（字段：name: 用户名， password:密码）fail
+### 2.登录（字段：name: 用户名， password:密码）solved
 
 ### 3.删除用户（字段：\_id;根据\_id 删除用户）solved
 
