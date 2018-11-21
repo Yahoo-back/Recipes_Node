@@ -84,23 +84,23 @@ router.get('/userList', (req, res, next) => {
 });
 
 // 删除
-router.get('/del', (req, res, next) => {
+router.get('/deleteUser', (req, res, next) => {
   let response = res;
   Users.find({ _id: req.body._id }, (err, result, res) => {
     if (err) return console.log(err);
     response.render('del', { result });
   });
 });
-router.post('/del', (req, res, next) => {
+router.post('/deleteUser', (req, res, next) => {
   Users.remove({ _id: req.body._id }, (err, result) => {
     if (err) return console.log(err);
     console.log(result.result);
-    res.send("<a href='/'>删除成功，点击返回首页</a>");
+    res.send('删除成功！');
   });
 });
 
 // 修改密码
-router.post('/change', function(req, res) {
+router.post('/changePsd', function(req, res) {
   const name = req.body.name;
   const OldPass = req.body.OldPass;
   const NewPass = req.body.NewPass;
@@ -125,15 +125,33 @@ router.post('/change', function(req, res) {
 });
 
 //查
-router.get('/reach', (req, res, next) => {
+router.get('/searchUser', (req, res, next) => {
   let result = null;
-  res.render('reach', { result });
+  res.render('searchUser', { result });
 });
-router.post('/reach', (req, res, next) => {
+router.post('/searchUser', (req, res, next) => {
   keyWord = req.body.name;
   Users.find({ name: keyWord }, (err, result) => {
-    if (err) return console.log(err);
-    res.send({ result });
+    if (result.length == 0) {
+      res.json({
+        msg: '用户不存在'
+      });
+    }
+    if (err) {
+      res.json({
+        status: '400',
+        msg: err.message
+      });
+    } else {
+      res.json({
+        status: '200',
+        msg: '',
+        data: {
+          count: result.length,
+          list: result
+        }
+      });
+    }
   });
 });
 
