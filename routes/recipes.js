@@ -18,6 +18,7 @@ var recipesSchema = new mongoose.Schema({
   name: String, //菜名
   updateTime: String, //上传时间
   imgs: String, //图片
+  mainFood: String, //主食材（查询条件）
   foods: String, //材料
   time: String, //耗费时间
   introductions: String //做法介绍
@@ -63,6 +64,7 @@ router.post('/addRecipes', function(req, res) {
     name: req.body.name, //菜名
     updateTime: req.body.updateTime, //上传时间
     imgs: req.body.imgs, //图片
+    mainFood: req.body.mainFood, //主食材
     foods: req.body.foods, //材料
     time: req.body.time, //耗费时间
     introductions: req.body.introductions //做法介绍
@@ -81,17 +83,13 @@ router.post('/addRecipes', function(req, res) {
 });
 
 //删除菜谱
-router.get('/deleteRecipe', (req, res, next) => {
-  let response = res;
-  Recipes.find({ _id: req.body._id }, (err, result, res) => {
-    if (err) return console.log(err);
-    response.render('deleteRecipe', { result });
-  });
-});
 router.post('/deleteRecipe', (req, res, next) => {
   Recipes.remove({ _id: req.body._id }, (err, result) => {
-    if (err) return console.log(err);
-    res.send({ result });
+    if (err) {
+      res.send('删除失败');
+    } else {
+      res.send({ result });
+    }
   });
 });
 
@@ -104,6 +102,7 @@ router.post('/edit', function(req, res) {
         name: req.body.name,
         updateTime: req.body.updateTime,
         imgs: req.body.imgs,
+        mainFood: req.body.mainFood, //主食材
         foods: req.body.foods,
         time: req.body.time,
         introductions: req.body.introductions
@@ -120,15 +119,16 @@ router.post('/edit', function(req, res) {
 });
 
 //查
-router.get('/searchRecipes', (req, res, next) => {
-  let result = null;
-  res.render('searchRecipes', { result });
-});
 router.post('/searchRecipes', (req, res, next) => {
-  keyWord = req.body.foods;
-  Recipes.find({ foods: keyWord }, (err, result) => {
-    if (err) return console.log(err);
-    res.send({ result });
+  firstkeyWord = req.body.mainFood;
+  secondkeyWord = req.body.name;
+  const search = [firstkeyWord, secondkeyWord]; //使用map、forEach遍历数组search
+  Recipes.find({ mainFood: firstkeyWord }, (err, result) => {
+    if (result.length == 0) {
+      res.send({ isSuccess: false, message: '菜谱不存在' });
+    } else {
+      res.send({ result });
+    }
   });
 });
 
