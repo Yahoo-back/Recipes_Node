@@ -16,7 +16,7 @@ var UserSchema = new mongoose.Schema({
 });
 const Users = mongoose.model('login', UserSchema);
 
-// 用户注册，向数据库中添加用户数据
+// 用户注册
 router.post('/register', function(req, res) {
   const newUser = new Users({
     name: req.body.name,
@@ -32,6 +32,25 @@ router.post('/register', function(req, res) {
         const datas = err ? { isSuccess: false } : { isSuccess: true, message: '注册成功' };
         res.send(datas);
       });
+    }
+  });
+});
+
+// 用户登录,查询数据库，判断用户名和密码是否匹配(fail)
+router.post('/login', function(req, res) {
+  const name = req.body.name;
+  const password = req.body.password;
+  Users.findOne({ name: name }, function(err, users) {
+    if (err) {
+      res.send({ isSuccess: false, message: '登录出错' });
+    }
+    //用户不存在
+    if (!users) {
+      res.send({ isSuccess: false, message: '用户不存在' });
+    }
+    //判断密码是否一致
+    else {
+      res.send({ isSuccess: true, message: '登陆成功' });
     }
   });
 });
@@ -64,58 +83,21 @@ router.get('/userList', (req, res, next) => {
   });
 });
 
-//用户查询
-router.get('/search', function(req, res, next) {
-  Users.find().exec(function(err, aa, count) {
-    res.send(aa);
+// 删除
+router.get('/del', (req, res, next) => {
+  let response = res;
+  Users.find({ _id: req.body._id }, (err, result, res) => {
+    if (err) return console.log(err);
+    response.render('del', { result });
   });
 });
-// router.post('/search', function(req, res, next) {
-//   const name = req.query.name;
-//   Users.find({ name: name }).exec(function(err, doc) {
-//     if (err) {
-//       res.json({
-//         status: '400',
-//         msg: err.message
-//       });
-//     } else {
-//       res.json({
-//         status: '200',
-//         msg: '',
-//         data: {
-//           count: doc.length,
-//           list: doc
-//         }
-//       });
-//     }
-//   });
-// });
-
-// 用户登录,查询数据库，判断用户名和密码是否匹配(fail)
-router.post('/login', function(req, res) {
-  const name = req.body.name;
-  const password = req.body.password;
-  Users.findOne({ name: name }, function(err, users) {
-    if (err) {
-      res.send({ isSuccess: false, message: '登录出错' });
-    }
-    //用户不存在
-    if (!users) {
-      res.send({ isSuccess: false, message: '用户不存在' });
-    }
-    //判断密码是否一致
-    else {
-      res.send({ isSuccess: true, message: '登陆成功' });
-    }
+router.post('/del', (req, res, next) => {
+  Users.remove({ _id: req.body._id }, (err, result) => {
+    if (err) return console.log(err);
+    console.log(result.result);
+    res.send("<a href='/'>删除成功，点击返回首页</a>");
   });
 });
-
-//退出登录
-// app.get('/layout', function(req,res){
-// 	delete req.session.users;
-// //delete app.locals.user; // 删除全局变量user,否则点击退出登录,页面无变化
-
-// });
 
 // 修改密码
 router.post('/change', function(req, res) {
@@ -142,47 +124,16 @@ router.post('/change', function(req, res) {
   });
 });
 
-// router.post('/destroy', function(req, res) {
-//   var params = URL.parse(req.url, true).query;
-//   console.log(params);
-//   //根据待办事项的id 来删除它
-//   Users.findByIdAndRemove(params.id, function(err, user) {
-//     res.status(200).send('User: ' + user.name + ' was deleted.');
-//   });
-// });
-
-// 删除
-router.delete('/:id', function(req, res) {
-  var id = req.query.id;
-  if (id) {
-    Users.remove({ _id: id }, function(err, user) {
-      if (err) {
-        res.send('fail');
-      } else {
-        res.send({ isSuccess: 1 });
-      }
-    });
-  }
-  // Users.findByIdAndRemove(req.params.id, function(err, user) {
-  //   if (err) return res.status(500).send('There was a problem deleting the user.');
-  //   res.status(200).send('User: ' + user.name + ' was deleted.');
-  // });
+//查
+router.get('/reach', (req, res, next) => {
+  let result = null;
+  res.render('reach', { result });
 });
-
-// router.get('/destroy', function(req, res) {
-//   var params = URL.parse(req.url, true).query;
-//   console.log(params);
-//   //根据待办事项的id 来删除它
-//   Users.findByIdAndRemove(params.id, function(err, user) {
-//     res.status(200).send('User: ' + user.name + ' was deleted.');
-//   });
-// });
-
-// 修改
-router.put('/:id', function(req, res) {
-  Users.findByIdAndUpdate(req.params.id, req.body, { new: true }, function(err, user) {
-    if (err) return res.status(500).send('There was a problem updating the user.');
-    res.status(200).send(user);
+router.post('/reach', (req, res, next) => {
+  keyWord = req.body.name;
+  Users.find({ name: keyWord }, (err, result) => {
+    if (err) return console.log(err);
+    res.send({ result });
   });
 });
 
