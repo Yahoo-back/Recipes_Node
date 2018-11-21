@@ -1,5 +1,9 @@
 var express = require('express');
+var fs = require('fs');
+var formidable = require('formidable');
+var sd = require('silly-datetime');
 var bcrypt = require('bcryptjs');
+var path = require('path');
 var router = express.Router();
 var mongoose = require('mongoose');
 var bodyParser = require('body-parser');
@@ -8,6 +12,7 @@ var URL = require('url');
 mongoose.connect('mongodb://localhost:27017/db_demo');
 router.use(bodyParser.urlencoded({ extended: true }));
 router.use(bodyParser.json());
+router.use(express.static(path.join(__dirname, 'public')));
 
 var recipesSchema = new mongoose.Schema({
   name: String, //菜名
@@ -122,6 +127,75 @@ router.get('/searchRecipes', (req, res, next) => {
 router.post('/searchRecipes', (req, res, next) => {
   keyWord = req.body.foods;
   Recipes.find({ foods: keyWord }, (err, result) => {
+    if (err) return console.log(err);
+    res.send({ result });
+  });
+});
+
+//图片上传
+router.post('/upload', function(req, res, next) {
+  var cacheFolder = 'uploadcache/'; //存放图片的文件名称
+  var fs = require('fs');
+  var path = require('path');
+  var formidable = require('formidable');
+  var userDirPath = cacheFolder;
+  if (!fs.existsSync(userDirPath)) {
+    fs.mkdirSync(userDirPath);
+  }
+  var form = new formidable.IncomingForm(); //创建上传表单
+  form.encoding = 'utf-8'; //设置编辑
+  form.uploadDir = userDirPath; //设置上传目录
+  form.keepExtensions = true; //保留后缀
+  form.maxFieldsSize = 2 * 1024 * 1024; //文件大小
+  form.type = true;
+  var displayUrl;
+  form.parse(req, function(err, fields, files) {
+    if (err) {
+      res.send(err);
+      return;
+    }
+    var extName = ''; //后缀名
+    switch (files.upload.type) {
+      case 'image/pjpeg':
+        extName = 'jpg';
+        break;
+      case 'image/jpeg':
+        extName = 'jpg';
+        break;
+      case 'image/png':
+        extName = 'png';
+        break;
+      case 'image/x-png':
+        extName = 'png';
+        break;
+    }
+    if (extName.length != 0) {
+      res.send({
+        code: 202,
+        msg: '只支持png和jpg格式图片'
+      });
+      return;
+    } else {
+      var avatarName = '/' + Date.now() + '.' + extName;
+      var newPath = form.uploadDir + avatarName;
+      displayUrl = avatarName;
+      fs.renameSync(files.upload.path, newPath); //重命名
+      res.json({
+        code: 0,
+        img: displayUrl
+      });
+    }
+  });
+});
+
+//查看菜谱详情
+router.get('/detail', (req, res, next) => {
+  let result = null;
+  res.render('detail', { result });
+});
+router.post('/detail', (req, res, next) => {
+  keyWord = req.body._id;
+  Recipes.find({ _id: keyWord }, (err, result) => {
     if (err) return console.log(err);
     res.send({ result });
   });

@@ -1,4 +1,5 @@
 var express = require('express');
+var path = require('path');
 var cookieParser = require('cookie-parser');
 // var session = require('express-session');
 // var mongoStore = require('connect-mongo')(session);
