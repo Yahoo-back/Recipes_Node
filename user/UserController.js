@@ -11,6 +11,7 @@ router.use(bodyParser.json());
 
 var UserSchema = new mongoose.Schema({
   name: String,
+  email: String,
   password: String,
   status: String
 });
@@ -20,13 +21,14 @@ const Users = mongoose.model('login', UserSchema);
 router.post('/register', function(req, res) {
   const newUser = new Users({
     name: req.body.name,
+    email: req.body.email,
     password: req.body.password,
     status: req.body.status
   });
-  const name = req.body.name;
-  Users.find({ name: name }, (err, docs) => {
+  const email = req.body.email;
+  Users.find({ email: email }, (err, docs) => {
     if (docs.length > 0) {
-      res.send({ isSuccess: false, message: '用户名已存在' });
+      res.send({ isSuccess: false, message: '账号已存在' });
     } else {
       newUser.save(err => {
         const datas = err ? { isSuccess: false } : { isSuccess: true, message: '注册成功' };
@@ -38,9 +40,9 @@ router.post('/register', function(req, res) {
 
 // 用户登录,查询数据库，判断用户名和密码是否匹配
 router.post('/login', function(req, res) {
-  const name = req.body.name;
+  const email = req.body.email;
   const password = req.body.password;
-  Users.findOne({ name: name, password: password }, function(err, users) {
+  Users.findOne({ email: email, password: password }, function(err, users) {
     if (err) {
       res.send({ isSuccess: false, message: '登录出错' });
     }
@@ -101,12 +103,12 @@ router.post('/deleteUser', (req, res, next) => {
 
 // 修改密码
 router.post('/changePsd', function(req, res) {
-  const name = req.body.name;
+  const email = req.body.email;
   const OldPass = req.body.OldPass;
   const NewPass = req.body.NewPass;
-  Users.find({ name: name }, function(err, user) {
+  Users.find({ email: email }, function(err, user) {
     if (user.length === 0) {
-      res.send({ isSuccess: false, message: '该用户名不存在' });
+      res.send({ isSuccess: false, message: '该账号不存在' });
     } else {
       const data = user[0];
       if (data.password === OldPass) {
@@ -130,8 +132,8 @@ router.get('/searchUser', (req, res, next) => {
   res.render('searchUser', { result });
 });
 router.post('/searchUser', (req, res, next) => {
-  keyWord = req.body.name;
-  Users.find({ name: keyWord }, (err, result) => {
+  keyWord = req.body.email;
+  Users.find({ email: keyWord }, (err, result) => {
     if (result.length == 0) {
       res.json({
         msg: '用户不存在'
