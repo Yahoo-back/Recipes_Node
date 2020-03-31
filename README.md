@@ -1,3 +1,3 @@
-### 安装：$ npm instll
+### 安装：$ npm install
 
 ### 运行：$ node server
